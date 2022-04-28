@@ -88,7 +88,7 @@ class ITicket {					//билет
 private:
 	int number_hall;			//номер зала
 	int seats;					//место
-	bool reservation = false;	//бронь места
+	bool reservation = 0;	//бронь места
 	ITicket* next;
 
 	friend class IHall;
@@ -107,6 +107,7 @@ public:
 	bool Empty();
 	void Clear();
 	void View();
+	void Purchase(int number_hall, int seats);
 
 	IHall()
 	{
@@ -122,6 +123,7 @@ public:
 	friend class Cinema_park;
 };
 
+
 void IHall::Create(int number_hall, int seats)
 {
 	ITicket* NewTicket = new ITicket();
@@ -129,7 +131,7 @@ void IHall::Create(int number_hall, int seats)
 	{
 		NewTicket->number_hall = number_hall;
 		NewTicket->seats = seats;
-		NewTicket->reservation = false;
+		NewTicket->reservation = 0;
 		NewTicket->next = 0;
 
 		if (ticket == NULL)
@@ -154,7 +156,7 @@ void IHall::Create_full(int number_hall, int number_seats)
 		{
 			NewTicket->number_hall = number_hall;
 			NewTicket->seats = index;
-			NewTicket->reservation = false;
+			NewTicket->reservation = 0;
 			NewTicket->next = 0;
 
 			if (ticket == NULL)
@@ -198,6 +200,16 @@ void IHall::View()
 		printf("index %d: number_hall'%d' \n seats: '%d' \n ", index, Ticket->number_hall, Ticket->seats);
 }
 
+void IHall::Purchase(int number_hall, int seats)
+{
+	int index = 1;
+	for (ITicket* Ticket = ticket; Ticket != 0; Ticket = Ticket->next, index++)
+	{
+		if ((Ticket->number_hall == number_hall) and (Ticket->seats == seats))
+			Ticket->reservation = 1;
+	}
+}
+
 class Cinema_park : public IKino {
 private:
 	IHall* hall;
@@ -208,6 +220,7 @@ public:
 	bool Empty();
 	void Clear();
 	void View();
+	void Purchase_Ticket(int number_hall,int seats);//покупка билетов
 	Cinema_park()
 	{
 		hall = 0;
@@ -218,6 +231,7 @@ public:
 		Clear();
 	}
 };
+
 
 void Cinema_park::Create(int number_hall, int number_seats, char name, char duration, int age_limit)
 {
@@ -291,7 +305,14 @@ void Cinema_park::View()
 	Hall->View();
 }
 
-
+void Cinema_park::Purchase_Ticket(int number_hall, int seats)
+{
+	int index = 1;
+	for (IHall* Hall = hall; Hall != 0; Hall = Hall->next, index++)
+	{
+		Hall->Purchase(number_hall, seats);
+	}
+}
 
 
 int main()
