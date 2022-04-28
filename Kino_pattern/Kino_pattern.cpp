@@ -15,7 +15,8 @@ private:
 
 class IKino {
 private:
-	IFilm* film;
+	IFilm* film ;
+	IKino* next;
 public:
 	void Create(char name, char duration, int age_limit);
 	void Delete();
@@ -25,6 +26,7 @@ public:
 	IKino()
 	{
 		film = 0;
+		next = 0;
 	}
 	~IKino()
 	{
@@ -82,10 +84,11 @@ void IKino::View()
 		printf("Фильм %d: '%c' \n Время: '%c' \n Возрастное ограничение: '%d' \n", index, Film->name , Film->duration, Film->age_limit);
 }
 
-class ITicket {			//билет
+class ITicket {					//билет
 private:
-	int number_hall;	//номер зала
-	int seats;          
+	int number_hall;			//номер зала
+	int seats;					//место
+	bool reservation = false;	//бронь места
 	ITicket* next;
 
 	friend class IHall;
@@ -94,9 +97,9 @@ private:
 class IHall {			//зал
 private:
 	ITicket* ticket;
-	int reservation;
 	int number_seats;	//кол. мест
 	IHall* next;
+
 public:
 	void Create(int number_hall, int seats);
 	void Create_full(int number_hall, int number_seats);
@@ -104,6 +107,19 @@ public:
 	bool Empty();
 	void Clear();
 	void View();
+
+	IHall()
+	{
+		ticket = 0;
+		number_seats = 0;
+		next = 0;
+	}
+	~IHall()
+	{
+		Clear();
+	}
+
+	friend class Cinema_park;
 };
 
 void IHall::Create(int number_hall, int seats)
@@ -113,6 +129,7 @@ void IHall::Create(int number_hall, int seats)
 	{
 		NewTicket->number_hall = number_hall;
 		NewTicket->seats = seats;
+		NewTicket->reservation = false;
 		NewTicket->next = 0;
 
 		if (ticket == NULL)
@@ -130,13 +147,14 @@ void IHall::Create(int number_hall, int seats)
 void IHall::Create_full(int number_hall, int number_seats)
 {
 	int index = 1;
-	for (index; index != number_seats; index++)
+	for (index; index != number_seats+1; index++)
 	{
 		ITicket* NewTicket = new ITicket();
 		if (NewTicket)
 		{
 			NewTicket->number_hall = number_hall;
 			NewTicket->seats = index;
+			NewTicket->reservation = false;
 			NewTicket->next = 0;
 
 			if (ticket == NULL)
@@ -150,7 +168,7 @@ void IHall::Create_full(int number_hall, int number_seats)
 			}
 		
 		}
-		NewTicket = NewTicket->next;
+		
 	}
 }
 
@@ -177,31 +195,112 @@ void IHall::View()
 {
 	int index = 1;
 	for (ITicket* Ticket = ticket; Ticket != 0; Ticket = Ticket->next , index++)
-		printf("index %d: number_hall'%d' \n seats: '%d' \n", index, Ticket->number_hall, Ticket->seats);
+		printf("index %d: number_hall'%d' \n seats: '%d' \n ", index, Ticket->number_hall, Ticket->seats);
 }
 
 class Cinema_park : public IKino {
 private:
 	IHall* hall;
 	IKino* film;
+public:
+	void Create(int number_hall, int number_seats, char name, char duration, int age_limit);
+	void Delete();
+	bool Empty();
+	void Clear();
+	void View();
+	Cinema_park()
+	{
+		hall = 0;
+		film = 0;
+	}
+	~Cinema_park()
+	{
+		Clear();
+	}
 };
+
+void Cinema_park::Create(int number_hall, int number_seats, char name, char duration, int age_limit)
+{
+	IHall* NewHall = new IHall();
+	IKino* NewKino = new IKino();
+	if (NewHall)  //  создания зала  и выхов созданя билетов
+	{
+		NewHall->number_seats = number_seats;
+		NewHall->next = 0;
+		NewHall->Create_full(number_hall, number_seats);
+
+		if (hall == NULL)
+		{
+			hall = NewHall;
+		}
+		else
+		{
+			NewHall->next = hall;
+			hall = NewHall;
+		}
+	}
+
+	if (NewKino) // создание фильма для зала 
+	{
+		NewKino->Create(name, duration, age_limit);
+
+		if (film == NULL)
+		{
+			film = NewKino;
+		}
+		else
+		{
+			NewKino->next = film;
+			film = NewKino;
+		}
+	}
+};
+
+void Cinema_park::Delete()
+{
+	IHall* NewHall = new IHall();
+	NewHall = hall;
+	hall = NewHall->next;
+	delete NewHall;
+
+	IKino* NewKino = new IKino();
+	NewKino = film;
+	film = NewKino->next;
+	delete NewKino;
+
+}
+
+bool Cinema_park::Empty()
+{
+	if (film or hall) return false;
+	else return true;
+}
+
+void Cinema_park::Clear()
+{
+	while (film) Delete();
+	while (hall) Delete();
+}
+
+void Cinema_park::View()
+{
+	IHall* Hall = hall;
+	IKino* Kino = film;
+	
+	Kino->View();
+	Hall->View();
+}
+
+
+
 
 int main()
 {
 	setlocale(LC_ALL, "Russian");
-	IKino film;
+	Cinema_park cinema;
 	int choice, age_limit, name, duration, exit = 0;
-	//char name, duration = 0;
-	IHall ticket;
-	printf("Film:");
-	scanf("%d", &name);
-	printf("Duration:");
-	scanf("%d", &duration);
-	printf("Age_limit:");
-	scanf("%d", &age_limit);
-	ticket.Create_full(name, duration);
-	printf("add completed!\n");
-	ticket.View();
+
+
 	/*do
 	{
 		do {
