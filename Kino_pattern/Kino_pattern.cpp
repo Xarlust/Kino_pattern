@@ -108,6 +108,8 @@ public:
 	void Clear();
 	void View();
 	void Purchase(int number_hall, int seats);
+	int  Full_hall(int number_hall);
+	bool Purchase_ticket_check(int number_hall, int seats);
 
 	IHall()
 	{
@@ -197,7 +199,7 @@ void IHall::View()
 {
 	int index = 1;
 	for (ITicket* Ticket = ticket; Ticket != 0; Ticket = Ticket->next , index++)
-		printf("index %d: number_hall'%d' \n seats: '%d' \n ", index, Ticket->number_hall, Ticket->seats);
+		printf("number_hall'%d' \n seats : '%d' \n ",  Ticket->number_hall, Ticket->seats);
 }
 
 void IHall::Purchase(int number_hall, int seats)
@@ -206,31 +208,78 @@ void IHall::Purchase(int number_hall, int seats)
 	for (ITicket* Ticket = ticket; Ticket != 0; Ticket = Ticket->next, index++)
 	{
 		if ((Ticket->number_hall == number_hall) and (Ticket->seats == seats))
+		{
 			Ticket->reservation = 1;
+			printf("Куплен билет с hall %d \n seats: '%d' \n ", Ticket->number_hall, Ticket->seats);
+		}
+	} 
+}
+
+int IHall::Full_hall(int number_hall)
+{
+	int index = 1;
+	int seats_empty = 0;
+	for (ITicket* Ticket = ticket; Ticket != 0; Ticket = Ticket->next, index++)
+	{
+		if (Ticket->reservation == 0 and Ticket->number_hall ==number_hall)
+			seats_empty++;
 	}
+	return seats_empty;
+}
+
+bool IHall::Purchase_ticket_check(int number_hall, int seats)
+{
+	int index = 0;
+	for (ITicket* Ticket = ticket; Ticket != 0; Ticket = Ticket->next, index++)
+	{
+		if ((Ticket->number_hall == number_hall) and (Ticket->seats == seats) and Ticket->reservation == 1)
+		{
+			printf("невозможно купить билет в hall %d \n с seats: '%d' \n ", Ticket->number_hall, Ticket->seats);
+			return 1;
+		}
+	}
+	return 0;
+	
 }
 
 class Cinema_park : public IKino {
 private:
 	IHall* hall;
 	IKino* film;
+	Cinema_park()
+	{
+		hall = 0;
+		film = 0;
+	}
+
 public:
+	/*Cinema_park(Cinema_park& outher) = delete;
+	void operator=(const Cinema_park&) = delete;
+	static Cinema_park* GetInstance();*/
 	void Create(int number_hall, int number_seats, char name, char duration, int age_limit);
 	void Delete();
 	bool Empty();
 	void Clear();
 	void View();
 	void Purchase_Ticket(int number_hall,int seats);//покупка билетов
-	Cinema_park()
-	{
-		hall = 0;
-		film = 0;
+	void Out_info_seat(int number_hall);
+	bool Check_purchase_ticket(int number_hall, int seats);
+	static Cinema_park* getInstance() {
+		static Cinema_park instance;
+		return &instance;
 	}
 	~Cinema_park()
 	{
 		Clear();
 	}
 };
+
+/* Cinema_park* Cinema_park::GetInstance()
+{
+	if (cinema == nullptr)
+		Cinema_park* cinema = new Cinema_park();
+	return cinema;
+}*/
 
 
 void Cinema_park::Create(int number_hall, int number_seats, char name, char duration, int age_limit)
@@ -311,23 +360,48 @@ void Cinema_park::Purchase_Ticket(int number_hall, int seats)
 	for (IHall* Hall = hall; Hall != 0; Hall = Hall->next, index++)
 	{
 		Hall->Purchase(number_hall, seats);
+		
 	}
+}
+
+void Cinema_park::Out_info_seat(int number_hall)
+{
+	int full_hall = 0;
+	IHall* Hall = hall;
+	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	full_hall = Hall->Full_hall(number_hall);
+	if (full_hall != 0) {
+		SetConsoleTextAttribute(hStdOut, FOREGROUND_GREEN);
+		printf("В зале №%d:\n свободно %d мест \n ", number_hall, full_hall);
+	}
+	else
+	{
+		SetConsoleTextAttribute(hStdOut, FOREGROUND_RED);
+		printf("Зал полон!!");
+	}
+}
+
+bool Cinema_park::Check_purchase_ticket(int number_hall, int seats)
+{
+	IHall* Hall = hall;
+	if (Hall->Purchase_ticket_check(number_hall, seats) == 1)
+		return 1;
+	return 0;
 }
 
 
 int main()
 {
 	setlocale(LC_ALL, "Russian");
-	Cinema_park cinema;
-	int choice, age_limit, name, duration, exit = 0;
+	int choice, age_limit, number_hall, number_seats,seats, exit = 0;
+	char name, duration = 0;
 
-
-	/*do
+	do
 	{
 		do {
-			printf("==================\n1.-add film \n2.-del last film \n3.-Clear film\n4.-is empty film\n5.-view all film\n0.-Exit\nAction:");
+			printf("==================\n1.-add hall + film \n2.-del last hall + film \n3.-Clear full hall + film\n4.-is empty hall + film\n5.-view all hall + film\n6.-Purchase_Ticket\n7.-Out info seat to hall\n0.-Exit\nAction:");
 			scanf("%d", &choice);
-		} while (choice < 0 || choice>5);
+		} while (choice < 0 || choice>7);
 
 		switch (choice)
 		{
@@ -342,46 +416,60 @@ int main()
 			scanf("%s", &duration);
 			printf("Age_limit:");
 			scanf("%i", &age_limit);
-			film.Create(name, duration, age_limit);
+			printf("number_hall:");
+			scanf("%i", &number_hall);
+			printf("number_seats:");
+			scanf("%i", &number_seats);
+			Cinema_park::getInstance()->Create(number_hall, number_seats, name, duration, age_limit);
 			printf("add completed!\n");
 			break;
-
 		case 2:
-			if (film.Empty())
+			if (Cinema_park::getInstance()->Empty())
 				printf("empty!\ndelete not execute!\n");
 			else
 			{
-				film.Delete();
+				Cinema_park::getInstance()->Delete();
 				printf("delete last completed!\n");
 			}
 			break;
 
 		case 3:
-			film.Clear();
-			printf("Film Clear!\n");
+			Cinema_park::getInstance()->Clear();
+			printf("Cinema Clear!\n");
 			break;
 		
 		case 4:
-			if (film.Empty())
-				printf("Stack empty!\n");
+			if (Cinema_park::getInstance()->Empty())
+				printf("Empty Cinema!\n");
 			else
-				printf("Stack no empty!\n");
+				printf("Cinema no empty!\n");
 			break;
 
 		case 5:
 			printf("View all film\n");
-			if (film.Empty())
+			if (Cinema_park::getInstance()->Empty())
 				printf("empty!\n");
 			else
-				film.View();
+				Cinema_park::getInstance()->View();
 			break;
-
-
+		case 6:
+			printf("number_hall:");
+			scanf("%i", &number_hall);
+			printf("seats:");
+			scanf("%i", &seats);
+			if(Cinema_park::getInstance()->Check_purchase_ticket(number_hall, seats) == 0)
+					Cinema_park::getInstance()->Purchase_Ticket(number_hall, seats);
+			break;
+		case 7:
+			printf("number_hall:");
+			scanf("%i", &number_hall);
+			Cinema_park::getInstance()->Out_info_seat(number_hall);
+			break;
 		default:
 			return 0;
 		}
 
-	} while (exit != 1); */
+	} while (exit != 1); 
 
 	return 0;
 }
