@@ -1,6 +1,7 @@
 ﻿#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <windows.h>
+#include <string>
 
 class IFilm {			//фильм
 private:
@@ -242,10 +243,41 @@ bool IHall::Purchase_ticket_check(int number_hall, int seats)
 	
 }
 
-class Cinema_park : public IKino {
+class IHallDecorator : public IHall {
+private:
+	IHall* m_decoratedIHall;
+public:
+	IHallDecorator(IHall* decoratedIHall) : m_decoratedIHall(decoratedIHall) {}
+
+	void getDecorator(int number_hall);
+	friend class IHall;
+};
+
+void getDecorator(int number_hall) {
+	int full_hall = 0;
+	IHall* Hall;
+	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	full_hall = Hall->Full_hall(number_hall);
+	if (full_hall != 0) {
+		SetConsoleTextAttribute(hStdOut, FOREGROUND_GREEN);
+	}
+	else
+	{
+		SetConsoleTextAttribute(hStdOut, FOREGROUND_RED);
+	}
+}
+
+/*class CollorDecorator : public IKinoDecorator { //декоратор 
+public:
+	CollorDecorator(IKino *decoratedIKino): IKinoDecorator(decoratedIKino){}
+
+};*/
+
+class Cinema_park : public IHall , IKino  {
 private:
 	IHall* hall;
 	IKino* film;
+
 	Cinema_park()
 	{
 		hall = 0;
@@ -285,6 +317,7 @@ public:
 void Cinema_park::Create(int number_hall, int number_seats, char name, char duration, int age_limit)
 {
 	IHall* NewHall = new IHall();
+	IHall* NewDecorator = new IHallDecorator(NewHall);
 	IKino* NewKino = new IKino();
 	if (NewHall)  //  создания зала  и выхов созданя билетов
 	{
@@ -368,15 +401,17 @@ void Cinema_park::Out_info_seat(int number_hall)
 {
 	int full_hall = 0;
 	IHall* Hall = hall;
-	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	//HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	full_hall = Hall->Full_hall(number_hall);
+	
+
 	if (full_hall != 0) {
-		SetConsoleTextAttribute(hStdOut, FOREGROUND_GREEN);
+		//SetConsoleTextAttribute(hStdOut, FOREGROUND_GREEN);
 		printf("В зале №%d:\n свободно %d мест \n ", number_hall, full_hall);
 	}
 	else
 	{
-		SetConsoleTextAttribute(hStdOut, FOREGROUND_RED);
+		//SetConsoleTextAttribute(hStdOut, FOREGROUND_RED);
 		printf("Зал полон!!");
 	}
 }
@@ -463,7 +498,8 @@ int main()
 		case 7:
 			printf("number_hall:");
 			scanf("%i", &number_hall);
-			Cinema_park::getInstance()->Out_info_seat(number_hall);
+			//Cinema_park::getInstance()->											//вызов декоратора
+ 			Cinema_park::getInstance()->Out_info_seat(number_hall);
 			break;
 		default:
 			return 0;
