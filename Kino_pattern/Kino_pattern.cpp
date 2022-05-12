@@ -80,7 +80,6 @@ int main()
 		case 7:
 			printf("number_hall:");
 			scanf("%i", &number_hall);
-			//Cinema_park::getInstance()->											//вызов декоратора
  			Cinema_park::getInstance()->Out_info_seat(number_hall);
 			break;
 		default:

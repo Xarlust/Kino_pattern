@@ -19,7 +19,7 @@ public:
 	void Purchase(int number_hall, int seats);
 	int  Full_hall(int number_hall);
 	bool Purchase_ticket_check(int number_hall, int seats);
-	void Out_info_seat(IHall* Hall, int number_hall);
+	void Out_info_seat( int number_hall);
 
 	IHall()
 	{
@@ -153,20 +153,15 @@ bool IHall::Purchase_ticket_check(int number_hall, int seats)
 
 }
 
-void IHall::Out_info_seat(IHall* Hall, int number_hall)
+void IHall::Out_info_seat( int number_hall)
 {
 	int full_hall = 0;
-	//HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	full_hall = Hall->Full_hall(number_hall);
-
-
+	full_hall = Full_hall(number_hall);
 	if (full_hall != 0) {
-		//SetConsoleTextAttribute(hStdOut, FOREGROUND_GREEN);
 		printf("В зале №%d:\n свободно %d мест \n ", number_hall, full_hall);
 	}
 	else
 	{
-		//SetConsoleTextAttribute(hStdOut, FOREGROUND_RED);
 		printf("Зал полон!!");
 	}
 }

@@ -20,9 +20,6 @@ private:
 	}
 
 public:
-	/*Cinema_park(Cinema_park& outher) = delete;
-	void operator=(const Cinema_park&) = delete;
-	static Cinema_park* GetInstance();*/
 	void Create(int number_hall, int number_seats, char name, char duration, int age_limit);
 	void Delete();
 	bool Empty();
@@ -41,12 +38,7 @@ public:
 	}
 };
 
-/* Cinema_park* Cinema_park::GetInstance()
-{
-	if (cinema == nullptr)
-		Cinema_park* cinema = new Cinema_park();
-	return cinema;
-}*/
+
 
 
 void Cinema_park::Create(int number_hall, int number_seats, char name, char duration, int age_limit)
@@ -70,6 +62,7 @@ void Cinema_park::Create(int number_hall, int number_seats, char name, char dura
 			hall = NewHall;
 		}
 	}
+
 
 	if (NewKino) // создание фильма для зала 
 	{
@@ -135,8 +128,11 @@ void Cinema_park::Purchase_Ticket(int number_hall, int seats)
 void Cinema_park::Out_info_seat(int number_hall)
 {
 	int full_hall = 0;
-	IHallDecorator* Decorator = decorator;
-	Decorator->Out_info_seat(Decorator, number_hall);
+	//IHallDecorator* Decorator = decorator;
+	//Decorator->getDecorator( number_hall);    для применения паттерна декоратор
+	IHall* Hall = hall;
+	Hall->Out_info_seat(number_hall);
+
 }
 
 bool Cinema_park::Check_purchase_ticket(int number_hall, int seats)
