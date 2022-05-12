@@ -141,6 +141,14 @@
   <ItemGroup>
     <ClCompile Include="Kino_pattern.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Cinema_park.h" />
+    <ClInclude Include="IFilm.h" />
+    <ClInclude Include="IHall.h" />
+    <ClInclude Include="IHallDecorator.h" />
+    <ClInclude Include="IKino.h" />
+    <ClInclude Include="ITicket.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
